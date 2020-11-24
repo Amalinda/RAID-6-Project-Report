@@ -1,0 +1,73 @@
+\section{System Implementation}
+\label{sec:implementation}
+In this section we describe the implementation of the RAID-6.
+
+\subsection{Configuration}
+Before the system is instantiated, a user is expected to configure the system.
+The configuration parameters are described in table-\ref{table:config}.
+
+\begin{table}[H]
+\begin{tabular}{|l|l|}
+\hline
+\textbf{property} & \textbf{description}              \\ \hline
+endpoint          & describes the location of buckets \\ \hline
+access\_key       & required for authentication       \\ \hline
+secret\_key       & required for authentication       \\ \hline
+\ data disks      & number of data disks              \\ \hline
+\ parity disks    & number of parity disks            \\ \hline
+chuck size        & size in bytes for use as a chuck  \\ \hline
+\end{tabular}
+\caption{Mandatory system configuration parameters}
+\label{table:config}
+\end{table}
+
+The parameter \textit{endpoint} is a URI that defines physical location of the S3 bucket.
+All vendors offer S3 buckets physically located across various geographical regions.
+If a user desires, it is possible to define $(N + M)$ different URIs corresponding to different geographical regions for higher storage reliability.
+
+\subsection{Extending S3 as storage for RAID-6}
+
+The RAID-6 functionality was first implemented and tested within a local machine.
+It was then extended to utilize S3 API for all file operations as well as to perform fault detection and disk creation instead of *nix system calls.
+This required creation of our own python-based functions to execute the expected input/output file operations in S3 buckets.
+In our system, we assume one storage disk as a single S3 bucket.
+Therefore, an implementation with four data disks and two parity disks will consist six S3 buckets.
+We follow the standard S3 API documentation available at \cite{wasabiDocs}.
+We chose Wasabi \cite{wasabiS3} as they do not charge extra for network quota at the time of writing.
+In order to validate the functionality of the RAID-6 system, we also need to mimic \textit{disk failures}.
+A separate program is made available in the source which aids in deleting arbitrary S3 buckets.
+
+During the initialization, \textit{S3 controller} creates the desired number of S3 buckets to be used as disks.
+It is imperative to note that bucket names need to be unique across a region.
+Hence, to avoid conflicts, a unique name may be pre or post append to each bucket's name.
+However, in our implementation, this need not be done as bucket name $disk\_i$ where $i$ ranges from $1-10$ were first claimed by us.
+
+\subsection{Data Distribution and File Management}
+
+\noindent {\bf File Storing:}
+A single stripe consists $N$ data chunks and $M$ parity chunks.
+In our implementation we utilize six data disks and two parity disks with a chunk size of 16 bytes.
+For each new file added, the RAID-6 controller produces one or more chunks per each storage disk depending on the size of input file.
+Chunks belonging to the same file are aggregated as a single file and are awarded the object name identified by the input file name.
+I.e., a single input file will always cause $(N + M)$ files created in all buckets identified by the exact filename.
+This provides the additional advantage of even updating the file at a later stage without no loss of storage space due to changed file sizes.
+This is because each time an object is updated with the same name within an S3 bucket, the former space allotted for the said object no longer used or need to be paid for.
+Coincidentally, this makes multiple file management comparatively easier due to innate advantages of S3 object storage.
+
+\noindent {\bf File Retrieval:} Provided no disk failures are detected, when a file needs to be retrieved, corresponding objects identified by the requested filename from all S3 disks are downloaded to a local storage by the RAID-6 controller followed by simple reconstruction.
+
+\noindent {\bf Recovery:}
+Prior to performing any I/O operations on the RAID-6 array, the RAID controller always checks for failures.
+Upon detecting a failed disk(s), as long as the simultaneous failure is less than $M$ number of disks, the RAID controller follows the process described in Section-\ref{raid_arithmetic} to repair the disks.
+Even if buckets (disks) are completely deleted from the vendor storage, our implementation will re-create the lost buckets and re-generate lost data.
+
+More specifically, the RAID-6 controller obtains a list of files from a working bucket and iterates through each possible object to obtain a list of files.
+It then proceeds to reconstruct the data in lost buckets and uploads back.
+Our expose a function RAID.Rebuild() from our RAID controller which achieves the aforementioned recovery functions and could be called arbitrarily to check and recover from disk failures.
+
+
+
+
+
+
+

@@ -1,0 +1,112 @@
+\section{PRIMER ON S3 AND RAID-6}
+\label{sec:primer}
+
+In this section we provide the reader a basic understanding of the mathematics behind the operation of RAID-6 as well as S3 object storage.
+
+\subsection{Object Storage for RAID}
+Typically, the equivalent of a single unit of S3 storage compared to a typical storage such as a hard disk is called a "bucket"\footnote{In what follows, we use the terms object storage and S3 interchangeably.
+}. 
+Object storage offers several advantages compared to traditional hard disk based file storage systems.
+Almost all vendors offer salable object storage by means of \textit{elastic S3 buckets}.
+This implies that maximum storage size of a RAID array made of S3 buckets need not be decided a priory.
+As such, the total size of a RAID system made of S3 buckets could easily scale with the total size of the files stored in all S3 buckets, i.e, if the total size of files decreases, the total size of the RAID system decreases thereby, decreasing the monthly cost of the RAID system vice versa.
+In addition, vendors also offer users the facility to instantiate S3 buckets across many regions of the world.
+This significantly enhances the reliability of the data stored under RAID systems that utilize geo-distributed S3 buckets.
+By extension, since all S3 buckets are managed by vendors, the S3 based RAID are not burdened with typical maintenance problems that arise from typical physical disk based RAID systems.
+
+However, object storage is not with no disadvantages.
+Object storage systems differ significantly from typical file storage systems in that they cannot be accessed by standard *nix file operation calls.
+As such, the only method of storing, retrieving and modifying data within an S3 bucket requires network access.
+Following that, all file operations are capped and reliant on network speed. Luckily, with its growing influence on individual consumers and large economies alike, the internet has become an increasingly vital part of our day-to-day lives and most of the people around the world are able to connect with high speed~\cite{statistica_2020, speedTest_2020}.
+
+\subsection{RAID-6 Arithmetic}
+\label{raid_arithmetic}
+In RAID-6, failure of a disk is modeled as an erasure, i.e., the failure of a storage device denotes a shutdown or no data to/from the device \footnote{Note that this is different to reading incorrect bits off a storage device. RAID-6 does not innately handle such failures.}.
+The RAID-6 arithmetic involves three major aspects.
+First the Vandermonde matrix is utilized to calculate and to maintain the checksum words on parity disks~\cite{raid6_2011}.
+Gaussian Elimination method is used to recover when an error is detected.
+A Galois field is used to perform arithmetic.
+We describe each of these steps in detail below. 
+\\[1pt]
+
+\noindent {\bf Computing and Maintaining Parity:}  The framework of a RAID-6 system is shown in Figure~\ref{fig:overview} . Assume that the RAID-6 system consists of $N$ data disks, $D_{1}, D_{2}.. D_{N}$ and $M$ parity disks $P_{1}, P_{2}.. P_{M}$ each holding only \textit{chuck size} of bytes.
+The data of each parity disk is computed using data from the data disks.
+The idea is that at any moment of time, a maximum of $M$ disk failure could simultaneously fail while still leaving the ability to reconstruct original data from the remaining disks.
+The function to compute the content of parity of disk $i$ is $F_i$ and it takes as arguments all the data present in data disks as represented in Eq-\ref{eq:parity}.
+
+\begin{equation}
+\label{eq:parity}
+P_i = F_i(D_1,D_2,...,D_N) = \sum_{j=1}^{N}d_j f_{i,j}
+\end{equation}
+
+Then all data chunks are aggregated to be a matrix $D$ where $D = [d_1, d_2,..,d_i]$ and all parity into a matrix $P$ where $P = [p_1, p_2,..,p_i]$.
+Therefore, the state of the system can be defined as $P = FD$.
+The computation of $P$ requires the generation of $F$, an $M \times N$ matrix called the Vandermonde matrix where $f_{i,j}=j^{i-1}$.
+A verbose version of this computation is expressed in Eq-\ref{eq:parity1} and Eq-\ref{eq:parity2}.
+It should be noted that this parity calculation should be carried out by performing the matrix multiplication over a Galois Field~\cite{matrix_1991}.
+
+\begin{equation}
+\label{eq:parity1}
+P= \left[
+\begin{matrix}
+f_{1,1}      & f_{1,2}      & \cdots & f_{1,N}      \\
+f_{2,1}      & f_{2,2}      & \cdots & f_{2,N}      \\
+\vdots & \vdots & \ddots & \vdots \\
+f_{M,1}      & f_{M,2}      & \cdots & f_{M,N}      \\
+\end{matrix}
+\right]
+\left[
+\begin{matrix}
+
+D_{1} \\
+D_{1} \\
+\vdots \\
+D_{1} \\
+\end{matrix}
+\right]
+\end{equation}
+
+\begin{equation}
+\label{eq:parity2}
+P= \left[
+\begin{matrix}
+1      & 1      & \cdots & 1      \\
+1      & 2      & \cdots & N      \\
+\vdots & \vdots & \ddots & \vdots \\
+1      & 2^{M-1}      & \cdots & N^{M-1}      \\
+\end{matrix}
+\right]
+\left[
+\begin{matrix}
+
+D_{1} \\
+D_{1} \\
+\vdots \\
+D_{1} \\
+\end{matrix}
+\right]
+\end{equation}
+
+\noindent {\bf Recovery of Disks:} In order to illustrate the recovery from disk failures, we define a matrix A and E such that $A = \left[\begin{matrix}I \\F \\\end{matrix}\right]$, and $E= \left[\begin{matrix}D \\P \\\end{matrix}\right]$ which aids in developing the relation $AD = E$.
+Here, $I$ is a $N \times N$ identity matrix and matrix $F, D, P$ are described as before. 
+As shown, each storage device in the system can be viewed as having a corresponding row in the matrix $A$.
+When a failure is detected, it is reflected in this equation by deleting the corresponding content of the failed device from $A$ and from $E$ resulting $A'$ and $E'$.
+This modifies the existing equation to $A'D = E'$.
+
+Elaborately, should data disk $D_{i}$ and parity disk $P_{j}$ fails simultaneously, the the $i^{th}$ row of $I$ and $j^{th}$ row of $F$ should be deleted to generate the $A'$.
+Afterwards, the $i^{th}$ row in $D$ and the $j^{th}$ row of $D$ should be deleted to generate the new $E'$~\cite{raid6_2011}, resulting in Eq-\ref{eq:gauss}
+
+\begin{equation}
+\label{eq:gauss}
+D=A'^{-1}E'
+\end{equation}
+
+The desired matrix to be computed now is $D$.
+To do so, $A'^{-1}$ is computed via the Gaussian Elimination method over a Galois Field followed by solving for $D$~\cite{matrix_1991}.
+
+
+
+
+
+
+      

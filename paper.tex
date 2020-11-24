@@ -1,0 +1,84 @@
+%\documentclass[sigconf]{acmart}
+%\documentclass[sigconf,10pt,anonymous]{acmart}
+\documentclass[sigconf,10pt]{acmart}
+
+\usepackage{balance} % For balanced columns on the last page
+\usepackage[english]{babel}
+\usepackage{blindtext}
+\usepackage{subcaption}
+\usepackage{xspace}
+
+% Copyright
+\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference info
+\setcopyright{none}
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+
+\settopmatter{printacmref=true, printccs=true, printfolios=false} %folios not allowed for Mobi 20'
+
+%\copyrightyear{2020}
+%\acmYear{2020}
+%\setcopyright{acmcopyright}
+\acmConference[CE7490]{Distributed Systems}{Semester 2}{Nanyang Technological University, Singapore}
+
+\begin{document}
+\title{RAID-6 atop S3}
+
+\author{Ismail Lotfi and Amalinda Gamage}
+
+ \affiliation{
+    \department {School of Computer Science and Engineering}
+   \institution{Nanyang Technological University}
+   \city{Singpore}
+ }
+ \email{{ismail003,jath0001}@e.ntu.edu.sg}
+
+\begin{abstract}
+Inexpensive, reliable storage is increasingly required for both businesses and the homes.
+As disk capacities increase and multiple drives are combined in one system, the probability of multiple disk failures increases.
+An idea originally refereed as \textit{Redundant Array of Inexpensive Disks}  (RAID) and now refereed as \textit{Redundant Array of Independent Disks} RAID proposes a range of RAID versions to solve this problem.
+This work focuses on RAID-6.
+RAID-6 is an improvement to the functionality of RAID-5 by an additional block of parity and tolerates up to two arbitrary concurrent disk failures.
+The key contribution of our work is the implementation and evaluation of a basic RAID-6 system atop multiple geo-distributed S3 storage buckets.
+We briefly state below several additional advanced features this RAID-6 implementation offers.
+First our implementation incorporates an unlimited files of arbitrary names and sizes.
+The unlimited nature in the number of files is the result of exploiting S3 object storage buckets as the main storage medium.
+Second, it supports a range of user intended RAID-6 disk configurations such as numbers of data, parity disks and file chuck sizes.
+Lastly, it also handles automatic detection of S3 object based storage disk failures as well their recovery.
+Our implementation is available at: \url{https://github.com/Amalinda/RAID6}.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10003033.10003058.10003065</concept_id>
+       <concept_desc>Networks~Wireless access points, base stations and infrastructure</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+</ccs2012>
+\end{CCSXML}
+\ccsdesc[500]{Storage~Redundancy, S3 and RAID-6}
+
+\keywords{Geo-distributed Reliable Storage}
+
+\maketitle
+
+\input{introduction.tex}
+\input{primer.tex}
+\input{systemImplementation.tex}
+\input{evaluation.tex}
+\input{lessons.tex}
+
+\section*{Acknowledgments}
+The authors would like to thank Prof. Datta for the provided opportunity which aided in exploring a number of technologies related to distributed storage systems.
+
+\balance
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{reference}
+
+\end{document}
