@@ -7,10 +7,10 @@ First we experimentally determine the time required to distribute a file in the 
 We call this the file store duration.
 We estimate file store duration for a range of file sizes and report our results in Fig.\ref{fig:S3R6Str}.
 
-Next we run an experiment to estimate the recover time of the system from failures.
+Next we run an experiment to estimate the recovery time of the system from failures.
 Our experiment methods is as follows.
 First, we store a file of known size in the S3-RAID6 array.
-Second, we chose $M$ number of random disks and delete them.
+Second, we choose $M$ number of random disks and delete them.
 Thirdly, we start the timer and estimate the recovery duration.
 During the recovery process, data from all buckets (disks) are downloaded by the RAID controller. 
 It then checks for missing disks, reconstructs the lost data and re-uploads the same.
