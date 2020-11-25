@@ -7,13 +7,17 @@ The discussion is of two fold.
 We discuss advantages of this approach and disadvantages of this approach followed up by best suited applications.
 
 Since our design is based on object storage, the network speed effects the performance of the system.
-As you can see from the results, the file size effects the save and recover times for files and disks respectively as each operation requires network connectivity.
+As it is observed from the results, the file size affects the save and recover times for files and disks respectively as each operation requires network connectivity.
 
-As the same time, this concept brings advantages.
+At the same time, this concept brings advantages.
 Object storage is managed.
-Meaning, it is unlikely a user needs to worry about validating the health of storage disks and maintenance. 
+Meaning, it is unlikely a user needs to worry about validating the health of storage disks and maintenance.
 Moreover, object storage is elastic.
 This entails that a user is free to inflate and shrink the size of RAID6 storage as necessary.
 Such advantages cater to a specific need of storage.
 More specifically, should there be a need to archive data at very high reliability the proposed approach in this solution is a strong candidate.
 Under geographically sparse locations spread across the world, each storage disk maintained under a different vendors, this approach will offer very high reliability.
+
+The disadvantages include being dependent on network connectivity as S3-RAID6 controller is not functional without reliable connectivity.
+This entails that a system such as this not suitable where high I/O operations are desired such as during day to day computing.
+

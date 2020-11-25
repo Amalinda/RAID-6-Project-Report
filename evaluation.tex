@@ -37,6 +37,11 @@ To be thorough, we repeat the following experiment for 2 files of size 1MB and 5
 For each file we change the chunk size of the S3-RAID6 array varying from $8, 16, 32, 64, 128, 256$. For each file of 1MB and 5MB, we estimate the variation of file save time in Fig.\ref{fig:S3R6StrCHK1MB} and Fig.\ref{fig:S3R6StrCHK5MB}.
 Afterwards, we then delete a single bucket from the S3-RAID6 array and compute the recovery time for each chunk.
 We present this result in Fig.\ref{fig:S3R6RcvCHK1MB} and Fig.\ref{fig:S3R6RcvCHK5MB}. 
+We observe that there is no strong effect of chunk size on file store and recovery time.
+However, doubling the file size doubles file store time but increases file recovery time by a factor of three.
+The minimal effect caused by chunk size highlights that the bottleneck for data storing and recovery is network throughput.
+Furthermore, the raid controllers data/parity computation requires less time as opposed to reconstruction.
+This is explained by the extra addition of upload time upon reconstruction as well as the reconstruction time which are similar in nature under the given file sizes and network throughput.
 
 \begin{figure}[h]
 \centering
