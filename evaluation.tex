@@ -40,7 +40,7 @@ We present this result in Fig.\ref{fig:S3R6RcvCHK1MB} and Fig.\ref{fig:S3R6RcvCH
 We observe that there is no strong effect of chunk size on file store and recovery time.
 However, doubling the file size doubles file store time but increases file recovery time by a factor of three.
 The minimal effect caused by chunk size highlights that the bottleneck for data storing and recovery is network throughput.
-Furthermore, the raid controllers data/parity computation requires less time as opposed to reconstruction.
+Furthermore, the RAID controllers data/parity computation requires less time as opposed to reconstruction.
 This is explained by the extra addition of upload time upon reconstruction as well as the reconstruction time which are similar in nature under the given file sizes and network throughput.
 
 \begin{figure}[h]
